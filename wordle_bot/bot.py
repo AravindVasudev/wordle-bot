@@ -1,16 +1,18 @@
 import time
 from typing import List
-from filelock import sys
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 
-from .constants import WORD_LIST_PATH, START_WORD, WORDLE_URL, DEFAULT_WAIT_SECONDS
+from .constants import WORD_LIST_PATH, START_WORD, WORDLE_URL, DEFAULT_WAIT_SECONDS, GUESS_WAIT_SECONDS
 
 class Bot:
     def __init__(self) -> None:
         self.wordList = Bot.loadWords()
         self.driver = webdriver.Chrome() # Chrome Web Driver
+        self.actions = ActionChains(self.driver)
 
         # TODO: Switch to explicit waits for finer control
         self.driver.implicitly_wait(DEFAULT_WAIT_SECONDS)
@@ -27,10 +29,12 @@ class Bot:
     def nextWord(self):
         """ Returns the next eligible guess """
         # TODO: Add logic to support custom start word
-        return self.wordList[0]
+        return self.wordList.pop(0)
 
     def tryWord(self):
-        pass
+        self.actions.send_keys(self.nextWord())
+        self.actions.send_keys(Keys.RETURN)
+        self.actions.perform()
 
     def filterWords(self):
         pass
@@ -54,13 +58,18 @@ class Bot:
 
         # Play the game
         for attempt in range(6):
-            self.tryWord() # try a word
-            self.filterWords(attempt) # filter wordList
+            # try a word
+            self.tryWord()
+            time.sleep(GUESS_WAIT_SECONDS)
 
-            if self.isDone(): # Check if done
-                print("Yay!")
-                time.sleep(DEFAULT_WAIT_SECONDS)
-                return
+            # filter wordList
+            # self.filterWords(attempt) 
+
+            # Check if done
+            # if self.isDone():
+            #     print("Yay!")
+            #     time.sleep(DEFAULT_WAIT_SECONDS)
+            #     return
 
         print("Nay :(")
         time.sleep(DEFAULT_WAIT_SECONDS)

@@ -49,6 +49,7 @@ class Bot:
         self.driver = webdriver.Chrome() # Chrome Web Driver
         self.actions = ActionChains(self.driver)
         self.gameState = GameState()
+        self.isDone = False
 
         # TODO: Switch to explicit waits for finer control
         self.driver.implicitly_wait(DEFAULT_WAIT_SECONDS)
@@ -78,29 +79,28 @@ class Bot:
         gameRowShadowRoot = self.driver.execute_script("return arguments[0].shadowRoot", gameRow)
 
         # Update game state
+        correctCount = 0
         for pos, tile in enumerate(gameRowShadowRoot.find_elements(By.CSS_SELECTOR, "game-tile")):
             state = tile.get_attribute("evaluation")
             letter = tile.get_attribute("letter")
-
-            print(state, letter)
 
             # TODO: Improve search to support repeated characters
             if state == "correct":
                 self.gameState.correctGuesses[pos] = letter
                 self.gameState.correctGuessSet.add(letter)
+                
+                correctCount += 1
             elif state == "present":
                 self.gameState.presentGuesses.add(letter)
             elif letter not in self.gameState.correctGuessSet and letter not in self.gameState.presentGuesses:
                 self.gameState.absentGuesses.add(letter)
 
-        print(self.gameState.correctGuesses, self.gameState.presentGuesses, self.gameState.absentGuesses)
-        print(len(self.wordList))
+        print(correctCount)
+        if correctCount == WORD_SIZE:
+            self.isDone = True
 
         # Filter word List
         self.wordList = list(filter(self.gameState.filter, self.wordList))
-
-    def isDone(self, attempt: int) -> bool:
-        pass
 
     def run(self) -> None:
         # Goto wordle site
@@ -124,14 +124,14 @@ class Bot:
             # try a word
             self.tryWord()
 
-            # Check if done
-            # if self.isDone():
-            #     print("Yay!")
-            #     time.sleep(DEFAULT_WAIT_SECONDS)
-            #     return
-
             # filter wordList
             self.filterWords(attempt) 
+
+            # Check if done
+            if self.isDone:
+                print("Yay!")
+                time.sleep(DEFAULT_WAIT_SECONDS)
+                return
 
             # Wait between each attempt for animations to load
             time.sleep(GUESS_WAIT_SECONDS)

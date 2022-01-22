@@ -54,6 +54,26 @@ def wordsWithChar(wordList: List[str], char: str) -> int:
     return sum(char in word for word in wordList)
 
 
+def generateVowelTable(wordList: List[str]) -> List[tuple[str, int]]:
+    """ Generates a tables of words with vowels count. """
+    vowelTable = []
+    vowelTable.append(("Words without vowels", wordsWithoutVowels(wordList)))
+    for vowel in VOWELS:
+        vowelTable.append((f"Words with '{vowel}'", wordsWithChar(wordList, vowel)))
+
+    return vowelTable
+
+
+def generateConsonantTable(wordList: List[str]) -> List[tuple[str, int]]:
+    """ Generates a tables of words with consonant count. """
+    consonantTable = []
+    for char in string.ascii_lowercase:
+        if char not in VOWELS:
+            consonantTable.append((f"Words with '{char}'", wordsWithChar(wordList, char)))
+
+    return consonantTable
+
+
 def main():
     # Load word list
     wordList = Bot.loadWords()
@@ -61,22 +81,14 @@ def main():
     """
     Vowel Stats
     """
-    vowelTable = []
-    vowelTable.append(("Words without vowels", wordsWithoutVowels(wordList)))
-    for vowel in VOWELS:
-        vowelTable.append((f"Words with '{vowel}'", wordsWithChar(wordList, vowel)))
-
+    vowelTable = generateVowelTable(wordList)
     print(generateFormattedTable(vowelTable))
     print(generateHistogram(vowelTable))
 
     """
     Consonant Stats
     """
-    consonantTable = []
-    for char in string.ascii_lowercase:
-        if char not in VOWELS:
-            consonantTable.append((f"Words with '{char}'", wordsWithChar(wordList, char)))
-
+    consonantTable = generateConsonantTable(wordList)
     print(generateFormattedTable(consonantTable))
     print(generateHistogram(consonantTable))
 

@@ -65,7 +65,6 @@ class Bot:
 
     def nextWord(self):
         """ Returns the next eligible guess """
-        # TODO: Add logic to support custom start word
         return self.wordList.pop(0)
 
     def tryWord(self) -> None:

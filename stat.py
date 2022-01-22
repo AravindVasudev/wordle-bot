@@ -7,6 +7,7 @@ sort the dictionary.
 from typing import List, Set
 
 from prettytable import PrettyTable
+import string
 
 from wordle_bot import Bot
 
@@ -32,6 +33,17 @@ def generateHistogram(table: List[tuple[str, int]]) -> str:
     return histogram
 
 
+def generateFormattedTable(table: List[tuple[str, int]]) -> PrettyTable:
+    """ Returns a prettytable table. """
+    prettyTable = PrettyTable()
+    prettyTable.field_names = ["Category", "Count"]
+
+    for label, value in table:
+        prettyTable.add_row([label, value])
+
+    return prettyTable
+
+
 def wordsWithoutVowels(wordList: List[str]) -> int:
     """ Returns the count of words without vowels in them. """
     return sum(all(char not in VOWELS for char in word) for word in wordList)
@@ -46,18 +58,27 @@ def main():
     # Load word list
     wordList = Bot.loadWords()
 
+    """
+    Vowel Stats
+    """
     vowelTable = []
     vowelTable.append(("Words without vowels", wordsWithoutVowels(wordList)))
     for vowel in VOWELS:
         vowelTable.append((f"Words with '{vowel}'", wordsWithChar(wordList, vowel)))
 
-    # Formatted Output Table
-    vowelOutputTable = PrettyTable()
-    for label, value in vowelTable:
-        vowelOutputTable.add_column(label, [value])
-
-    print(vowelOutputTable)
+    print(generateFormattedTable(vowelTable))
     print(generateHistogram(vowelTable))
+
+    """
+    Consonant Stats
+    """
+    consonantTable = []
+    for char in string.ascii_lowercase:
+        if char not in VOWELS:
+            consonantTable.append((f"Words with '{char}'", wordsWithChar(wordList, char)))
+
+    print(generateFormattedTable(consonantTable))
+    print(generateHistogram(consonantTable))
 
 
 if __name__ == "__main__":

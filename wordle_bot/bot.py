@@ -15,6 +15,7 @@ class TileState(str, enum.Enum):
     PRESENT = "present"
     ABSENT = "absent"
 
+
 @dataclass
 class GameState:
     """ Game State Object """
@@ -26,21 +27,21 @@ class GameState:
 
     # Green Guesses
     correctGuesses: List[str] = field(default_factory=lambda: [None] * WORD_SIZE)
+    correctGuessSet: Set[str] = field(default_factory=set)
 
     def filter(self, word):
         """ returns true if the word is a legit guess else false """
+        # TODO: Improve search to support repeated characters
         # Check for the green characters
         for pos, char in enumerate(self.correctGuesses):
             if char and char != word[pos]:
                 return False
 
-        # wordSet = set(word)
+        # Check if word has all must haves and doesn't have any shouldn't haves
+        wordSet = set(word)
+        return self.presentGuesses <= wordSet and \
+            not (self.absentGuesses & wordSet)
 
-        return True
-
-        # # Check if word has all must haves and doesn't have any shouldn't haves
-        # return self.presentGuesses.issubset(wordSet) and \
-        #     self.absentGuesses.intersection(wordSet) == 0
 
 class Bot:
     def __init__(self) -> None:
@@ -81,19 +82,24 @@ class Bot:
             state = tile.get_attribute("evaluation")
             letter = tile.get_attribute("letter")
 
+            print(state, letter)
+
+            # TODO: Improve search to support repeated characters
             if state == "correct":
                 self.gameState.correctGuesses[pos] = letter
+                self.gameState.correctGuessSet.add(letter)
             elif state == "present":
                 self.gameState.presentGuesses.add(letter)
-            else:
+            elif letter not in self.gameState.correctGuessSet and letter not in self.gameState.presentGuesses:
                 self.gameState.absentGuesses.add(letter)
+
+        print(self.gameState.correctGuesses, self.gameState.presentGuesses, self.gameState.absentGuesses)
+        print(len(self.wordList))
 
         # Filter word List
         self.wordList = list(filter(self.gameState.filter, self.wordList))
 
-        print(len(self.wordList))
-
-    def isDone(self) -> bool:
+    def isDone(self, attempt: int) -> bool:
         pass
 
     def run(self) -> None:

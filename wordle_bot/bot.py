@@ -1,6 +1,6 @@
-from fileinput import close
 import time
 from typing import List
+from filelock import sys
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -24,6 +24,20 @@ class Bot:
         with open(wordListPath) as file:
             return [line.strip() for line in file.readlines()]
 
+    def nextWord(self):
+        """ Returns the next eligible guess """
+        # TODO: Add logic to support custom start word
+        return self.wordList[0]
+
+    def tryWord(self):
+        pass
+
+    def filterWords(self):
+        pass
+
+    def isDone(self):
+        pass
+
     def run(self):
         # Goto wordle site
         self.driver.get(WORDLE_URL)
@@ -36,7 +50,17 @@ class Bot:
         gameModalShadowRoot = self.driver.execute_script("return arguments[0].shadowRoot", gameModal)
 
         closeIcon = gameModalShadowRoot.find_element(By.CSS_SELECTOR, ".close-icon") # Get <div class="close-icon">
-
         closeIcon.click()
 
-        time.sleep(5)
+        # Play the game
+        for attempt in range(6):
+            self.tryWord() # try a word
+            self.filterWords(attempt) # filter wordList
+
+            if self.isDone(): # Check if done
+                print("Yay!")
+                time.sleep(DEFAULT_WAIT_SECONDS)
+                return
+
+        print("Nay :(")
+        time.sleep(DEFAULT_WAIT_SECONDS)

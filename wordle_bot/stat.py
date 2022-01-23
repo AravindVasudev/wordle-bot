@@ -10,6 +10,8 @@ from prettytable import PrettyTable
 import string
 
 from wordle_bot import Bot
+from wordle_bot.bot import GameState
+from wordle_bot.constants import WORD_SIZE
 
 VOWELS: Set[str] = {"a", "e", "i", "o", "u"}
 
@@ -67,6 +69,44 @@ def generateVowelTable(wordList: List[str]) -> List[tuple[str, str, int]]:
     return vowelTable
 
 
+def generateGuessCountTable(wordList: List[str]) -> PrettyTable:
+    """ Generates a table with guess count for all the words """
+    prettyTable = PrettyTable()
+    prettyTable.field_names = ["Word", "Guesses"]
+
+    for word in wordList:
+        words = list(wordList) # copy word list
+
+        # Play the game
+        gameState = GameState()
+        for attempt in range(20): # Set to 20 to prevent hanging
+            guess = words.pop(0) # Start with the first word
+
+            # Update game state
+            correctCount = 0
+            for pos, letter in enumerate(guess):
+                if letter == word[pos]: # Correct Guess
+                    gameState.correctGuesses[pos] = letter
+                    gameState.correctGuessSet.add(letter)
+
+                    correctCount += 1
+                elif letter in word: # Partial Guess
+                    gameState.presentGuesses.add(letter)
+                elif letter not in gameState.correctGuessSet and letter not in gameState.presentGuesses:
+                    # Absent Guess
+                    gameState.absentGuesses.add(letter)
+
+            # If found, update states
+            if correctCount == WORD_SIZE:
+                prettyTable.add_row([word, attempt + 1])
+                break
+
+            # Prune words
+            words = list(filter(gameState.filter, words))
+
+    return prettyTable
+
+
 def generateConsonantTable(wordList: List[str]) -> List[tuple[str, str, int]]:
     """Generates a tables of words with consonant count."""
     consonantTable = []
@@ -96,6 +136,12 @@ def main() -> None:
     consonantTable = generateConsonantTable(wordList)
     print(generateFormattedTable(consonantTable))
     print(generateHistogram(consonantTable))
+
+    """
+    Current Ordering Guess Stats
+    """
+    with open("words_guess.txt", "w") as file:
+        print(generateGuessCountTable(wordList), file=file)
 
 
 if __name__ == "__main__":

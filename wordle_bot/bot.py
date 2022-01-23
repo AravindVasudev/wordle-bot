@@ -9,7 +9,13 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 
-from .constants import WORD_LIST_PATH, WORDLE_URL, DEFAULT_WAIT_SECONDS, GUESS_WAIT_SECONDS,WORD_SIZE
+from .constants import (
+    WORD_LIST_PATH,
+    WORDLE_URL,
+    DEFAULT_WAIT_SECONDS,
+    GUESS_WAIT_SECONDS,
+    WORD_SIZE,
+)
 
 
 class TileState(str, enum.Enum):
@@ -20,7 +26,8 @@ class TileState(str, enum.Enum):
 
 @dataclass
 class GameState:
-    """ Game State Object """
+    """Game State Object"""
+
     # Yellow Guesses
     presentGuesses: Set[str] = field(default_factory=set)
 
@@ -32,7 +39,7 @@ class GameState:
     correctGuessSet: Set[str] = field(default_factory=set)
 
     def filter(self, word):
-        """ returns true if the word is a legit guess else false """
+        """returns true if the word is a legit guess else false"""
         # TODO: Improve search to support repeated characters
         # Check for the green characters
         for pos, char in enumerate(self.correctGuesses):
@@ -41,8 +48,7 @@ class GameState:
 
         # Check if word has all must haves and doesn't have any shouldn't haves
         wordSet = set(word)
-        return self.presentGuesses <= wordSet and \
-            not (self.absentGuesses & wordSet)
+        return self.presentGuesses <= wordSet and not (self.absentGuesses & wordSet)
 
 
 class Bot:
@@ -62,16 +68,16 @@ class Bot:
         self.driver.implicitly_wait(DEFAULT_WAIT_SECONDS)
 
     def __del__(self) -> None:
-        self.driver.close() # Close Chrome Web Driver
+        self.driver.close()  # Close Chrome Web Driver
 
     @staticmethod
     def loadWords(wordListPath: str = WORD_LIST_PATH) -> List[str]:
-        """ Loads and returns a list of words from `wordListPath` """
+        """Loads and returns a list of words from `wordListPath`"""
         with open(wordListPath) as file:
             return [line.strip() for line in file.readlines()]
 
     def nextWord(self):
-        """ Returns the next eligible guess """
+        """Returns the next eligible guess"""
         return self.wordList.pop(0)
 
     def tryWord(self) -> str:
@@ -85,11 +91,15 @@ class Bot:
     def filterWords(self, attempt: int) -> None:
         # Get the current attempt results
         gameRow = self.gameBoard.find_elements(By.CSS_SELECTOR, "game-row")[attempt]
-        gameRowShadowRoot = self.driver.execute_script("return arguments[0].shadowRoot", gameRow)
+        gameRowShadowRoot = self.driver.execute_script(
+            "return arguments[0].shadowRoot", gameRow
+        )
 
         # Update game state
         correctCount = 0
-        for pos, tile in enumerate(gameRowShadowRoot.find_elements(By.CSS_SELECTOR, "game-tile")):
+        for pos, tile in enumerate(
+            gameRowShadowRoot.find_elements(By.CSS_SELECTOR, "game-tile")
+        ):
             state = tile.get_attribute("evaluation")
             letter = tile.get_attribute("letter")
 
@@ -97,11 +107,14 @@ class Bot:
             if state == "correct":
                 self.gameState.correctGuesses[pos] = letter
                 self.gameState.correctGuessSet.add(letter)
-                
+
                 correctCount += 1
             elif state == "present":
                 self.gameState.presentGuesses.add(letter)
-            elif letter not in self.gameState.correctGuessSet and letter not in self.gameState.presentGuesses:
+            elif (
+                letter not in self.gameState.correctGuessSet
+                and letter not in self.gameState.presentGuesses
+            ):
                 self.gameState.absentGuesses.add(letter)
 
         if correctCount == WORD_SIZE:
@@ -113,19 +126,31 @@ class Bot:
     def run(self) -> None:
         # Goto wordle site
         self.driver.get(WORDLE_URL)
-        
+
         # Close the instructions pop-up
-        gameApp = self.driver.find_element(By.CSS_SELECTOR, "game-app") # Get <game-app>
-        gameAppShadowRoot = self.driver.execute_script("return arguments[0].shadowRoot", gameApp)
+        gameApp = self.driver.find_element(
+            By.CSS_SELECTOR, "game-app"
+        )  # Get <game-app>
+        gameAppShadowRoot = self.driver.execute_script(
+            "return arguments[0].shadowRoot", gameApp
+        )
 
-        gameModal = gameAppShadowRoot.find_element(By.CSS_SELECTOR, "game-modal") # Get <game-modal>
-        gameModalShadowRoot = self.driver.execute_script("return arguments[0].shadowRoot", gameModal)
+        gameModal = gameAppShadowRoot.find_element(
+            By.CSS_SELECTOR, "game-modal"
+        )  # Get <game-modal>
+        gameModalShadowRoot = self.driver.execute_script(
+            "return arguments[0].shadowRoot", gameModal
+        )
 
-        closeIcon = gameModalShadowRoot.find_element(By.CSS_SELECTOR, ".close-icon") # Get <div class="close-icon">
+        closeIcon = gameModalShadowRoot.find_element(
+            By.CSS_SELECTOR, ".close-icon"
+        )  # Get <div class="close-icon">
         closeIcon.click()
 
         # Get game board
-        self.gameBoard = gameAppShadowRoot.find_element(By.CSS_SELECTOR, "#board") # Get <div id="board">
+        self.gameBoard = gameAppShadowRoot.find_element(
+            By.CSS_SELECTOR, "#board"
+        )  # Get <div id="board">
 
         # Play the game
         print(f"Initial Search space: {len(self.wordList)}")
@@ -134,7 +159,7 @@ class Bot:
             guess = self.tryWord()
 
             # filter wordList
-            self.filterWords(attempt) 
+            self.filterWords(attempt)
             print(f"Search space after {guess}: {len(self.wordList)}")
 
             # Check if done

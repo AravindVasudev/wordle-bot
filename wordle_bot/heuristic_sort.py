@@ -16,15 +16,20 @@ from .stat import generateVowelTable, generateConsonantTable
 
 
 def writeToFile(wordList: List[str], file=WORD_LIST_PATH) -> None:
-    """ Writes the wordList to the given file. """
+    """Writes the wordList to the given file."""
     with open(file, "w") as f:
         for word in wordList:
             print(word, file=f)
 
 
 class HeuristicWeight:
-    """ Determines heuristic weight of a word. """
-    def __init__(self, vowelTable: List[tuple[str, str, int]], consonantTable: List[tuple[str, str, int]]):
+    """Determines heuristic weight of a word."""
+
+    def __init__(
+        self,
+        vowelTable: List[tuple[str, str, int]],
+        consonantTable: List[tuple[str, str, int]],
+    ):
         self.vowelTable = vowelTable
         self.consonantTable = consonantTable
         self.vowelOrdering = HeuristicWeight.__computeOrdering(vowelTable)
@@ -32,18 +37,23 @@ class HeuristicWeight:
 
         # Helpers
         # Generates a key for sorted fn using vowel and consonant count.
-        self.generateKey = lambda vowelOrder, consonantOrder: vowelOrder * 1000 + consonantOrder
+        self.generateKey = (
+            lambda vowelOrder, consonantOrder: vowelOrder * 1000 + consonantOrder
+        )
 
     @staticmethod
     def __computeOrdering(table: List[tuple[str, str, int]]) -> Dict[str, int]:
-        """ Generates orderind using weightage. """
+        """Generates orderind using weightage."""
         # TODO: Make the ordering relative, i.e., if x is 5 and y is 100, the
         # ordering should reflect that.
-        return {entry[0]: pos + 1 for pos, entry in \
-            enumerate(sorted(table, key=lambda x: x[2])) if entry[0]}
+        return {
+            entry[0]: pos + 1
+            for pos, entry in enumerate(sorted(table, key=lambda x: x[2]))
+            if entry[0]
+        }
 
     def key(self, word: str) -> int:
-        """ Comparison key method for ordering.  """
+        """Comparison key method for ordering."""
         vowelOrder, consonantOrder = 0, 0
         for vowel, order in self.vowelOrdering.items():
             if vowel in word:
@@ -62,8 +72,7 @@ def main():
 
     # Init heuristic weight
     heuristicWeight = HeuristicWeight(
-        generateVowelTable(wordList),
-        generateConsonantTable(wordList)
+        generateVowelTable(wordList), generateConsonantTable(wordList)
     )
 
     writeToFile(sorted(wordList, key=heuristicWeight.key, reverse=True))

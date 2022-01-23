@@ -10,6 +10,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from .constants import WORD_LIST_PATH, WORDLE_URL, DEFAULT_WAIT_SECONDS, GUESS_WAIT_SECONDS,WORD_SIZE
 
+
 class TileState(str, enum.Enum):
     CORRECT = "correct"
     PRESENT = "present"
@@ -94,7 +95,6 @@ class Bot:
             elif letter not in self.gameState.correctGuessSet and letter not in self.gameState.presentGuesses:
                 self.gameState.absentGuesses.add(letter)
 
-        print(correctCount)
         if correctCount == WORD_SIZE:
             self.isDone = True
 

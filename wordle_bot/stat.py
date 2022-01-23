@@ -13,13 +13,14 @@ from wordle_bot import Bot
 
 VOWELS: Set[str] = {"a", "e", "i", "o", "u"}
 
-def generateHistogram(table: List[tuple[str, int]]) -> str:
+
+def generateHistogram(table: List[tuple[str, str, int]]) -> str:
     """ Generates a simple horizontal histogram string. """
     # Config
     barLength = 50 # Length of each histogram bars
 
-    labelLength = max(len(label) for label, _ in table) + 1 # Max Label Size + 1
-    maxCohortValue = max(value for _, value in table) # Used to scale values
+    labelLength = max(len(label) for _, label, _ in table) + 1 # Max Label Size + 1
+    maxCohortValue = max(value for _, _, value in table) # Used to scale values
 
     histogram = "" # Histogram output
 
@@ -27,18 +28,18 @@ def generateHistogram(table: List[tuple[str, int]]) -> str:
     padLabel = lambda label: label + " " * (labelLength - len(label))
     generateBar = lambda value: "#" * int((value / maxCohortValue) * barLength)
 
-    for label, value in table:
+    for _, label, value in table:
         histogram += f"{padLabel(label)} | {generateBar(value)}\n"
 
     return histogram
 
 
-def generateFormattedTable(table: List[tuple[str, int]]) -> PrettyTable:
+def generateFormattedTable(table: List[tuple[str, str, int]]) -> PrettyTable:
     """ Returns a prettytable table. """
     prettyTable = PrettyTable()
     prettyTable.field_names = ["Category", "Count"]
 
-    for label, value in table:
+    for _, label, value in table:
         prettyTable.add_row([label, value])
 
     return prettyTable
@@ -54,27 +55,27 @@ def wordsWithChar(wordList: List[str], char: str) -> int:
     return sum(char in word for word in wordList)
 
 
-def generateVowelTable(wordList: List[str]) -> List[tuple[str, int]]:
+def generateVowelTable(wordList: List[str]) -> List[tuple[str, str, int]]:
     """ Generates a tables of words with vowels count. """
     vowelTable = []
-    vowelTable.append(("Words without vowels", wordsWithoutVowels(wordList)))
+    vowelTable.append(("", "Words without vowels", wordsWithoutVowels(wordList)))
     for vowel in VOWELS:
-        vowelTable.append((f"Words with '{vowel}'", wordsWithChar(wordList, vowel)))
+        vowelTable.append((vowel, f"Words with '{vowel}'", wordsWithChar(wordList, vowel)))
 
     return vowelTable
 
 
-def generateConsonantTable(wordList: List[str]) -> List[tuple[str, int]]:
+def generateConsonantTable(wordList: List[str]) -> List[tuple[str, str, int]]:
     """ Generates a tables of words with consonant count. """
     consonantTable = []
     for char in string.ascii_lowercase:
         if char not in VOWELS:
-            consonantTable.append((f"Words with '{char}'", wordsWithChar(wordList, char)))
+            consonantTable.append((char, f"Words with '{char}'", wordsWithChar(wordList, char)))
 
     return consonantTable
 
 
-def main():
+def main() -> None:
     # Load word list
     wordList = Bot.loadWords()
 

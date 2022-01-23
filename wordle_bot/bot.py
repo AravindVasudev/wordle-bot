@@ -7,6 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
 
 from .constants import WORD_LIST_PATH, WORDLE_URL, DEFAULT_WAIT_SECONDS, GUESS_WAIT_SECONDS,WORD_SIZE
 
@@ -47,10 +48,15 @@ class GameState:
 class Bot:
     def __init__(self) -> None:
         self.wordList = Bot.loadWords()
-        self.driver = webdriver.Chrome() # Chrome Web Driver
-        self.actions = ActionChains(self.driver)
         self.gameState = GameState()
         self.isDone = False
+
+        # Init Chrome Web Driver
+        options = Options()
+        options.add_argument("--log-level=3")
+
+        self.driver = webdriver.Chrome(chrome_options=options)
+        self.actions = ActionChains(self.driver)
 
         # TODO: Switch to explicit waits for finer control
         self.driver.implicitly_wait(DEFAULT_WAIT_SECONDS)

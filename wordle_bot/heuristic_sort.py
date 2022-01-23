@@ -39,8 +39,8 @@ class HeuristicWeight:
         """ Generates orderind using weightage. """
         # TODO: Make the ordering relative, i.e., if x is 5 and y is 100, the
         # ordering should reflect that.
-        return {entry[0]: pos for pos, entry in \
-            enumerate(sorted(table, key=lambda x: x[2]))}
+        return {entry[0]: pos + 1 for pos, entry in \
+            enumerate(sorted(table, key=lambda x: x[2])) if entry[0]}
 
     def key(self, word: str) -> int:
         """ Comparison key method for ordering.  """

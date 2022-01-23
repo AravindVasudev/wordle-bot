@@ -45,11 +45,11 @@ class HeuristicWeight:
     def key(self, word: str) -> int:
         """ Comparison key method for ordering.  """
         vowelOrder, consonantOrder = 0, 0
-        for vowel, order in self.vowelOrdering:
+        for vowel, order in self.vowelOrdering.items():
             if vowel in word:
                 vowelOrder += order
 
-        for consonant, order in self.consonantOrdering:
+        for consonant, order in self.consonantOrdering.items():
             if consonant in word:
                 consonantOrder += order
 
@@ -67,8 +67,8 @@ def main():
     )
 
     writeToFile(
-        sorted(wordList, key=heuristicWeight.key),
-        "sorted.txt"
+        sorted(wordList, key=heuristicWeight.key, reverse=True),
+        "sorted.txt",
     )
 
 

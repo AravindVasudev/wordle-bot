@@ -68,10 +68,13 @@ class Bot:
         """ Returns the next eligible guess """
         return self.wordList.pop(0)
 
-    def tryWord(self) -> None:
-        self.actions.send_keys(self.nextWord())
+    def tryWord(self) -> str:
+        nextWord = self.nextWord()
+        self.actions.send_keys(nextWord)
         self.actions.send_keys(Keys.RETURN)
         self.actions.perform()
+
+        return nextWord
 
     def filterWords(self, attempt: int) -> None:
         # Get the current attempt results
@@ -119,12 +122,14 @@ class Bot:
         self.gameBoard = gameAppShadowRoot.find_element(By.CSS_SELECTOR, "#board") # Get <div id="board">
 
         # Play the game
+        print(f"Initial Search space: {len(self.wordList)}")
         for attempt in range(6):
             # try a word
-            self.tryWord()
+            guess = self.tryWord()
 
             # filter wordList
             self.filterWords(attempt) 
+            print(f"Search space after {guess}: {len(self.wordList)}")
 
             # Check if done
             if self.isDone:

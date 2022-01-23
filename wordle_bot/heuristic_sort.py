@@ -66,10 +66,7 @@ def main():
         generateConsonantTable(wordList)
     )
 
-    writeToFile(
-        sorted(wordList, key=heuristicWeight.key, reverse=True),
-        "sorted.txt",
-    )
+    writeToFile(sorted(wordList, key=heuristicWeight.key, reverse=True))
 
 
 if __name__ == "__main__":

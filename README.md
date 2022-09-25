@@ -10,7 +10,7 @@ prunes the list using the clues. For additionally advantage, the bot sorts the
 word list into an hueristical ordering based on character occurence to further
 improve the chances.
 
-* [ ] TODO: Write a blog and link here.
+* [Draft article on implementation.](https://aravindvasu.dev/2022/solving-wordle/)
 
 ## Dependencies
 * Python 3.8
